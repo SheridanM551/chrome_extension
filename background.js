@@ -44,6 +44,46 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             console.log("圖片 URL 已儲存:", imageUrl);
         });
 
+        fetch('http://localhost:3000/detectUrl', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ imageUrl: imageUrl })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('伺服器回應:', data);
+            if (data.status === 'success') {
+                chrome.storage.local.set({ recognitionResult: data }, () => {
+                    console.log('辨識結果已儲存:', data);
+
+                    chrome.notifications.create({
+                        type: "basic",
+                        iconUrl: "icon.png",
+                        title: "檢測完成",
+                        message: data.message
+                    });
+                }); 
+            } else {
+                chrome.notifications.create({
+                    type: "basic",
+                    iconUrl: "icon.png",
+                    title: "檢測錯誤",
+                    message: "檢測失敗，請稍後再試"
+                });
+            }
+        })
+        .catch(error => {
+            console.error('伺服器請求錯誤:', error);
+            chrome.notifications.create({
+                type: "basic",
+                iconUrl: "icon.png",
+                title: "錯誤",
+                message: "伺服器錯誤，請稍後再試"
+            });
+        });        
+
         // 可以在這裡進行實際的模型推理或伺服器請求
         console.log("正在辨識圖片:", imageUrl);
         chrome.action.openPopup(() => {
@@ -159,13 +199,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .then(response => response.json())
             .then(data => {
                 console.log('伺服器回應:', data);
-                            // 根據伺服器回應進行後續處理
                 if (data.status === 'success') {
-                    // 將辨識結果存入 chrome.storage.local
                     chrome.storage.local.set({ recognitionResult: data }, () => {
                         console.log('辨識結果已儲存:', data);
 
-                        // 顯示通知
                         chrome.notifications.create({
                             type: "basic",
                             iconUrl: "icon.png",
@@ -202,6 +239,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     } else if (message.action === "captureEntireScreenshot") {
         chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
+            console.log("Screenshot captured:", dataUrl);        
             if (chrome.runtime.lastError) {
                 sendResponse({ success: false, error: chrome.runtime.lastError });
             } else {

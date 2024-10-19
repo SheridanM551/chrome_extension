@@ -45,9 +45,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     // 模擬辨識時間
                     setTimeout(() => {
                         // 辨識結束，更新狀態
-                        document.querySelector('.spinner').style.display = 'none';
-                        document.getElementById('status').innerText = '辨識完成：這是一張假影像！';
-                    }, 3000); // 模擬3秒後完成辨識
+                        chrome.storage.local.get('recognitionResult', (result) => {
+                            if (result.recognitionResult) {
+                                loaderElement.style.display = 'none';
+                                statusElement.innerText = `辨識完成：${result.recognitionResult.prediction}`;
+                            } else {
+                                loaderElement.style.display = 'none';
+                                statusElement.innerText = '無法取得辨識結果。';
+                            }
+                        });
+                    }, 5000); // 模擬3秒後完成辨識
                 }
             });
         } else if (message.action === 'UIshowSelectedScreenshot') {
@@ -62,12 +69,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     cropScreenshot(screenshotUrl, selectionDetails).then((croppedImage) => {
                         imgElement.src = croppedImage;
                         imgElement.style.display = 'block';
-                        // 延遲3秒後再去讀取辨識結果
                         setTimeout(() => {
-                            // 從 chrome.storage.local 取得辨識結果
                             chrome.storage.local.get('recognitionResult', (result) => {
                                 if (result.recognitionResult) {
-                                    // 停止加載動畫並顯示結果
                                     loaderElement.style.display = 'none';
                                     statusElement.innerText = `辨識完成：${result.recognitionResult.prediction}`;
                                 } else {
@@ -75,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     statusElement.innerText = '無法取得辨識結果。';
                                 }
                             });
-                        }, 5000);  // 等待3秒後再執行                       
+                        }, 5000);                         
                     });
                 } else {
                     console.log("No screenshot data found.");
