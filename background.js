@@ -148,6 +148,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         });
     } else if (info.menuItemId === "CaptureEntirescreen") {
         chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
+            console.log("Screenshot captured:", dataUrl);        
             if (chrome.runtime.lastError) {
                 console.error(chrome.runtime.lastError);
             }
@@ -156,6 +157,47 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     chrome.runtime.sendMessage({ action: "UIshowEntireScreenshot", screenshotData: dataUrl });
                 });
             }
+
+            fetch('http://localhost:3000/detect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: dataUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('伺服器回應:', data);
+                if (data.status === 'success') {
+                    chrome.storage.local.set({ recognitionResult: data }, () => {
+                        console.log('辨識結果已儲存:', data);
+
+                        chrome.notifications.create({
+                            type: "basic",
+                            iconUrl: "icon.png",
+                            title: "檢測完成",
+                            message: data.message
+                        });
+                    }); 
+                } else {
+                    chrome.notifications.create({
+                        type: "basic",
+                        iconUrl: "icon.png",
+                        title: "檢測錯誤",
+                        message: "檢測失敗，請稍後再試"
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('伺服器請求錯誤:', error);
+                chrome.notifications.create({
+                    type: "basic",
+                    iconUrl: "icon.png",
+                    title: "錯誤",
+                    message: "伺服器錯誤，請稍後再試"
+                });
+            });            
+            
         });
     } else if (info.menuItemId === "AutoDetect") { // Modified
         chrome.scripting.executeScript({
@@ -238,6 +280,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         });
     } else if (message.action === "captureEntireScreenshot") {
+        console.log("Screenshot captured:", dataUrl);        
         chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
             console.log("Screenshot captured:", dataUrl);        
             if (chrome.runtime.lastError) {

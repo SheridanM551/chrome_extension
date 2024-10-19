@@ -10,9 +10,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // 當文件讀取完成後，將其顯示在 img 中
                 reader.onload = function (e) {
+                    const imageDataUrl = e.target.result;  // 設定圖片的 Data URL
                     imagePreview.src = e.target.result;  // 設定圖片的 Data URL
                     imagePreview.style.display = 'block';  // 顯示圖片
-                    statusElement.innerText = '上傳完成';
+                    statusElement.innerText = '上傳完成，正在預測';
+
+                    // 發送圖片給伺服器進行預測
+                    fetch('http://localhost:3000/detect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ image: imageDataUrl })  // 傳送 Base64 編碼圖片
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('伺服器回應:', data);
+
+                        // 顯示預測結果
+                        if (data.status === 'success') {
+                            statusElement.innerText = `預測完成：${data.prediction}`;
+                        } else {
+                            statusElement.innerText = '預測失敗，請稍後再試';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('伺服器請求錯誤:', error);
+                        statusElement.innerText = '伺服器錯誤，請稍後再試';
+                    });                    
                 };
 
                 // 讀取文件並轉換為 Data URL
@@ -98,6 +123,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error("No entire screenshot data found.");
                 imgElement.alt = "EntireScreenshot not found";
             }
+            setTimeout(() => {
+                chrome.storage.local.get('recognitionResult', (result) => {
+                    if (result.recognitionResult) {
+                        loaderElement.style.display = 'none';
+                        statusElement.innerText = `辨識完成：${result.recognitionResult.prediction}`;
+                    } else {
+                        loaderElement.style.display = 'none';
+                        statusElement.innerText = '無法取得辨識結果。';
+                    }
+                });
+            }, 5000); 
         } else if (message.action === 'UIUploadFile') {
             h2Element.innerText = '上傳檔案';
             statusElement.innerText = '等待檔案上傳...';
