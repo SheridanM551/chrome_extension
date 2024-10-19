@@ -7,10 +7,12 @@
         "contextMenus",
         "activeTab",
         "storage",
+        "scripting",
+        "tabs",  
         "notifications"
     ],
     "host_permissions": [  
-        "https://www.virustotal.com/*" 
+        "<all_urls>"
     ],
     "content_scripts": [
         {
@@ -18,7 +20,8 @@
                 "<all_urls>"
             ], 
             "js": [
-                "contentScript.js"
+                "contentScript.js",
+                "content.js"
             ]
         }
     ],

@@ -9,9 +9,9 @@ function isNewsWebsite() {
 
     // 判斷是否為已知的新聞網站域名
     const knownNewsDomains = [
-        "udn.com",             // 聯合新聞網
+        "udn.com",              // 聯合新聞網
         "chinatimes.com",       // 中時新聞網
-        "tw.nextapple.com/",       // 蘋果日報
+        "tw.nextapple.com/",    // 蘋果日報
         "ettoday.net",          // ETtoday
         "storm.mg",             // 風傳媒
         "ltn.com.tw",           // 自由時報
@@ -41,7 +41,6 @@ function isNewsWebsite() {
     return false;
 }
 
-// 如果是新聞網站，做出相應處理
 if (isNewsWebsite()) {
     console.log("這是一個新聞網站！");
 
