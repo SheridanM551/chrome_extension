@@ -1,33 +1,40 @@
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Popup opened. Retrieving data...");
-
-    // Get the screenshot URL and selection details from chrome.storage.local
-    chrome.storage.local.get(['screenshotUrl', 'selectionDetails'], (data) => {
-        if (data.screenshotUrl && data.selectionDetails) {
-            const { screenshotUrl, selectionDetails } = data;
-            console.log("Screenshot and selection details found:", data);
-            // Perform cropping in the popup
-            cropScreenshot(screenshotUrl, selectionDetails).then((croppedImage) => {
-                document.getElementById('image-preview').src = croppedImage;
-                
+    chrome.runtime.onMessage.addListener((message) => {
+        imgElement = document.getElementById('image-preview');
+        if (message.action === 'UIshowSelectedImage') {
+            chrome.storage.local.get('imageUrl', (result) => {
+                if (result.imageUrl) {
+                    // 顯示圖片縮圖
+                    imgElement.src = result.imageUrl;
+                    console.log('popup.js: startRecognition, imageUrl:', result.imageUrl);
+                    // 模擬辨識時間
+                    setTimeout(() => {
+                        // 辨識結束，更新狀態
+                        document.querySelector('.spinner').style.display = 'none';
+                        document.getElementById('status').innerText = '辨識完成：這是一張假影像！';
+                    }, 3000); // 模擬3秒後完成辨識
+                }
             });
-        } else {
-            console.log("No screenshot data found.");
-            document.body.textContent = "No screenshot captured. Please select an area.";
-        }
-    });
-    
-    chrome.storage.local.get('imageUrl', (result) => {
-        if (result.imageUrl) {
-            // 顯示圖片縮圖
-            document.getElementById('image-preview').src = result.imageUrl;
-            console.log('popup.js: startRecognition, imageUrl:', result.imageUrl);
-            // 模擬辨識時間
-            setTimeout(() => {
-                // 辨識結束，更新狀態
-                document.querySelector('.spinner').style.display = 'none';
-                document.getElementById('status').innerText = '辨識完成：這是一張假影像！';
-            }, 3000); // 模擬3秒後完成辨識
+        } else if (message.action === 'UIshowSelectedScreenshot') {
+            chrome.storage.local.get(['screenshotUrl', 'selectionDetails'], (data) => {
+                if (data.screenshotUrl && data.selectionDetails) {
+                    const { screenshotUrl, selectionDetails } = data;
+                    console.log("Screenshot and selection details found:", data);
+                    cropScreenshot(screenshotUrl, selectionDetails).then((croppedImage) => {
+                        imgElement.src = croppedImage;
+                    });
+                } else {
+                    console.log("No screenshot data found.");
+                    imgElement.alt = "Selected Screenshot not found";
+                }
+            });
+        } else if (message.action === 'UIshowEntireScreenshot') {
+            if (message.screenshotData) {
+                imgElement.src = message.screenshotData;
+            } else {
+                console.error("No entire screenshot data found.");
+                imgElement.alt = "EntireScreenshot not found";
+            }
         }
     });
 });
@@ -44,8 +51,8 @@ function cropScreenshot(screenshotUrl, selection) {
             // Adjust selection details based on device pixel ratio (DPR)
             const dpr = window.devicePixelRatio;
 
-            const adjustedX = selection.x * dpr;
-            const adjustedY = selection.y * dpr;
+            const adjustedX = (selection.x - window.scrollX) * dpr;
+            const adjustedY = (selection.y - window.scrollY) * dpr;
             const adjustedWidth = selection.width * dpr;
             const adjustedHeight = selection.height * dpr;
 

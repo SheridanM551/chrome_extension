@@ -12,24 +12,15 @@ chrome.runtime.onInstalled.addListener(() => {
             contexts: ["page", "link"]
         });
         chrome.contextMenus.create({
-            id: "parentMenu",
-            title: "選擇區域進行檢測",
-            contexts: ["all"]
+            id: "CaptureEntirescreen",
+            title: "檢測_全頁截圖",
+            contexts: ["page", "all"]
         });
         chrome.contextMenus.create({
             id: "selectArea",
-            parentId: "parentMenu",
-            title: "Select Specific Area",
+            title: "檢測_手動截圖",
             contexts: ["all"]
         });
-
-        chrome.contextMenus.create({
-            id: "CaptureEntirescreen",
-            parentId: "parentMenu",
-            title: "Capture Whole Screen",
-            contexts: ["all"]
-        });
-
     });
 });
 
@@ -45,7 +36,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
         // 可以在這裡進行實際的模型推理或伺服器請求
         console.log("正在辨識圖片:", imageUrl);
-        chrome.action.openPopup(); 
+        chrome.action.openPopup(() => {
+            chrome.runtime.sendMessage({ action: "UIshowSelectedImage"});
+        }); 
 
     }
     else if (info.menuItemId === "checkSafety") {
@@ -104,7 +97,16 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             console.log("Message sent to content.js to start selection");
         });
     } else if (info.menuItemId === "CaptureEntirescreen") {
-            // to do
+        chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+            }
+            else {
+                chrome.action.openPopup(() => {
+                    chrome.runtime.sendMessage({ action: "UIshowEntireScreenshot", screenshotData: dataUrl });
+                });
+            }
+        });
     }
 });
 
@@ -127,8 +129,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
             chrome.storage.local.set({ screenshotUrl, selectionDetails }, () => {
                 console.log("Screenshot data stored.");
-                chrome.action.openPopup(); 
+                chrome.action.openPopup(() => {
+                    chrome.runtime.sendMessage({ action: "UIshowSelectedScreenshot"});
+                }); 
             });
         });
+    } else if (message.action === "captureEntireScreenshot") {
+        chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError });
+            } else {
+                sendResponse({ success: true, dataUrl: dataUrl });
+            }
+        });
+        return true;
     }
 });

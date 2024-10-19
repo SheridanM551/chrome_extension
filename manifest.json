@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "圖片檢測擴充功能",
-    "version": "1.0",
-    "description": "右鍵點擊圖片時，增加檢測選項並擷取圖片。",
+    "version": "1.2",
+    "description": "圖片檢測、網站檢測集成插件",
     "permissions": [
         "contextMenus",
         "activeTab",
