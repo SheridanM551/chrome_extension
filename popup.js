@@ -62,6 +62,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     cropScreenshot(screenshotUrl, selectionDetails).then((croppedImage) => {
                         imgElement.src = croppedImage;
                         imgElement.style.display = 'block';
+                        // 延遲3秒後再去讀取辨識結果
+                        setTimeout(() => {
+                            // 從 chrome.storage.local 取得辨識結果
+                            chrome.storage.local.get('recognitionResult', (result) => {
+                                if (result.recognitionResult) {
+                                    // 停止加載動畫並顯示結果
+                                    loaderElement.style.display = 'none';
+                                    statusElement.innerText = `辨識完成：${result.recognitionResult.prediction}`;
+                                } else {
+                                    loaderElement.style.display = 'none';
+                                    statusElement.innerText = '無法取得辨識結果。';
+                                }
+                            });
+                        }, 5000);  // 等待3秒後再執行                       
                     });
                 } else {
                     console.log("No screenshot data found.");

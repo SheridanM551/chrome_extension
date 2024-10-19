@@ -148,6 +148,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: 'png' }, (screenshotUrl) => {
 
             console.log("Screenshot captured:", screenshotUrl);
+            
+            fetch('http://localhost:3000/detect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: screenshotUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('伺服器回應:', data);
+                            // 根據伺服器回應進行後續處理
+                if (data.status === 'success') {
+                    // 將辨識結果存入 chrome.storage.local
+                    chrome.storage.local.set({ recognitionResult: data }, () => {
+                        console.log('辨識結果已儲存:', data);
+
+                        // 顯示通知
+                        chrome.notifications.create({
+                            type: "basic",
+                            iconUrl: "icon.png",
+                            title: "檢測完成",
+                            message: data.message
+                        });
+                    }); 
+                } else {
+                    chrome.notifications.create({
+                        type: "basic",
+                        iconUrl: "icon.png",
+                        title: "檢測錯誤",
+                        message: "檢測失敗，請稍後再試"
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('伺服器請求錯誤:', error);
+                chrome.notifications.create({
+                    type: "basic",
+                    iconUrl: "icon.png",
+                    title: "錯誤",
+                    message: "伺服器錯誤，請稍後再試"
+                });
+            });
+
 
             chrome.storage.local.set({ screenshotUrl, selectionDetails }, () => {
                 console.log("Screenshot data stored.");
