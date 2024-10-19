@@ -21,6 +21,11 @@ chrome.runtime.onInstalled.addListener(() => {
             title: "手動截圖",
             contexts: ["all"]
         });
+        chrome.contextMenus.create({ // Modified
+            id: "AutoDetect",
+            title: "全頁自動檢測",
+            contexts: ["all"]
+        });
         chrome.contextMenus.create({
             id: "uploadFile",
             title: "上傳檔案",
@@ -112,6 +117,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 });
             }
         });
+    } else if (info.menuItemId === "AutoDetect") { // Modified
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js']
+        }, () => {
+            chrome.tabs.sendMessage(tab.id, { action: 'AutoDetect' });
+            console.log("Message sent to auto-detect.");
+        });
     } else if (info.menuItemId === "uploadFile") {
         chrome.action.openPopup(() => {
             chrome.runtime.sendMessage({ action: "UIUploadFile"});
@@ -152,5 +165,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         });
         return true;
+    } else if (message.action === 'InformationCaptured') { //Modified
+        console.log("Information captured:", message.imageUrls);
+        // TODO: Handle the image URLs here
     }
 });

@@ -80,3 +80,18 @@
         }
     });
 })();
+// Modified
+function getAllImages() {
+    const images = document.querySelectorAll('img'); // Select all <img> elements
+    const imageUrls = Array.from(images).map(img => img.src); // Extract the src attribute from each image
+
+    console.log("Images found on the page:", imageUrls);
+
+    chrome.runtime.sendMessage({ action: 'InformationCaptured', imageUrls });
+}
+// Modified
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'AutoDetect') {
+        getAllImages();
+    }
+});
