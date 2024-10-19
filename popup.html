@@ -22,13 +22,14 @@
         }
 
         .spinner {
-            margin-top: 20px;
+            /* margin-top: 20px; */
             border: 4px solid rgba(0, 0, 0, 0.1);
             width: 36px;
             height: 36px;
             border-radius: 50%;
             border-left-color: #09f;
             animation: spin 1s ease infinite;
+            margin-inline: auto;
         }
 
         @keyframes spin {
@@ -40,6 +41,27 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* 隱藏原生的 file input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* 自訂的檔案上傳按鈕 */
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
@@ -48,6 +70,11 @@
     <div class="spinner"></div>
     <p id="status">正在辨識...</p>
     <img id="image-preview" src="" alt="圖片縮圖" />
+    <div id="fileInputDiv">
+        <label for="fileInput" class="custom-file-upload">選擇檔案</label>
+        <input type="file" id="fileInput" />
+    </div>
+
     <script src="popup.js"></script>
 </body>
 

@@ -13,12 +13,17 @@ chrome.runtime.onInstalled.addListener(() => {
         });
         chrome.contextMenus.create({
             id: "CaptureEntirescreen",
-            title: "檢測_全頁截圖",
+            title: "全頁截圖",
             contexts: ["page", "all"]
         });
         chrome.contextMenus.create({
             id: "selectArea",
-            title: "檢測_手動截圖",
+            title: "手動截圖",
+            contexts: ["all"]
+        });
+        chrome.contextMenus.create({
+            id: "uploadFile",
+            title: "上傳檔案",
             contexts: ["all"]
         });
     });
@@ -106,6 +111,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     chrome.runtime.sendMessage({ action: "UIshowEntireScreenshot", screenshotData: dataUrl });
                 });
             }
+        });
+    } else if (info.menuItemId === "uploadFile") {
+        chrome.action.openPopup(() => {
+            chrome.runtime.sendMessage({ action: "UIUploadFile"});
         });
     }
 });
