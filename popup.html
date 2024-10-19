@@ -1,40 +1,55 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>圖片辨識中</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-    .loader {
-      border: 8px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 8px solid #3498db;
-      width: 60px;
-      height: 60px;
-      animation: spin 2s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    #result {
-      display: none;
-      font-size: 18px;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h1>圖片辨識中...</h1>
-  <div class="loader"></div>
-  <div id="result"></div>
+<html lang="en">
 
-  <!-- 外部 JavaScript -->
-  <script src="popup.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖片檢測</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            width: 300px;
+            text-align: center;
+        }
+
+        #status {
+            margin-top: 20px;
+        }
+
+        #image-preview {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            margin-top: 20px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h2>圖片檢測中...</h2>
+    <div class="spinner"></div>
+    <p id="status">正在辨識...</p>
+    <img id="image-preview" src="" alt="圖片縮圖" />
+
+    <script src="popup.js"></script>
 </body>
+
 </html>

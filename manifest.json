@@ -4,14 +4,32 @@
     "version": "1.0",
     "description": "右鍵點擊圖片時，增加檢測選項並擷取圖片。",
     "permissions": [
-      "contextMenus",
-      "activeTab"
+        "contextMenus",
+        "activeTab",
+        "storage",
+        "notifications"
+    ],
+    "host_permissions": [  
+        "https://www.virustotal.com/*" 
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ], 
+            "js": [
+                "contentScript.js"
+            ]
+        }
     ],
     "background": {
-      "service_worker": "background.js"
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
     },
     "icons": {
-      "48": "icon.png"
+        "48": "icon.png"
     }
-  }
-  
+}
