@@ -293,5 +293,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.action === 'InformationCaptured') { //Modified
         console.log("Information captured:", message.imageUrls);
         // TODO: Handle the image URLs here
+        const imageUrls = message.imageUrls;
+
+        predictImages(imageUrls); 
+
     }
 });
+
+
+function predictImages(imageUrls) {
+    const fakeImages = [];
+
+    Promise.all(
+        imageUrls.map((imageUrl) => {
+            return fetch('http://localhost:3000/detectUrl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ imageUrl: imageUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.status === 'success' && data.prediction === 'Fake!') {
+                    fakeImages.push(imageUrl);
+                }
+            })
+            .catch(error => {
+                console.error('預測圖片失敗:', imageUrl, error);
+            });
+        })
+    ).then(() => {
+        chrome.storage.local.set({ fakeImages }, () => {
+            console.log("假照片結果已儲存至 local storage:", fakeImages);
+        });
+    });
+}

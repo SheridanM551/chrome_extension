@@ -138,6 +138,23 @@ document.addEventListener('DOMContentLoaded', function () {
             h2Element.innerText = '上傳檔案';
             statusElement.innerText = '等待檔案上傳...';
             fileInputElement.style.display = 'block';
+
+        } else if (message.action === 'AutoDetect') {
+            // h2Element.innerText = '自動偵測';
+            // statusElement.innerText = '辨識中...';
+
+            // setTimeout(() => {
+            //     chrome.storage.local.get('fakeImages', (result) => {
+            //         if (result.fakeImages) {
+            //             const containFake = (result.fakeImages)? "CONTAIN FAKE IMAGE!" : "ALL REAL!"
+            //             loaderElement.style.display = 'none';
+            //             statusElement.innerText = `辨識完成：${containFake}`;
+            //         } else {
+            //             loaderElement.style.display = 'none';
+            //             statusElement.innerText = '無法取得辨識結果。';
+            //         }
+            //     });
+            // }, 10000);             
         }
     });
 });
