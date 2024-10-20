@@ -204,7 +204,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             target: { tabId: tab.id },
             files: ['content.js']
         }, () => {
-            chrome.tabs.sendMessage(tab.id, { action: 'AutoDetect' });
+            chrome.action.openPopup(() => {
+                chrome.runtime.sendMessage({ action: "AutoDetect"});
+            });
+            chrome.tabs.sendMessage(tab.id, { action: "startAutoDetect" , tabId: tab.id});
             console.log("Message sent to auto-detect.");
         });
     } else if (info.menuItemId === "uploadFile") {
@@ -294,14 +297,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log("Information captured:", message.imageUrls);
         // TODO: Handle the image URLs here
         const imageUrls = message.imageUrls;
-
-        predictImages(imageUrls); 
-
+        const tabId = message.tabId;
+        predictImages(imageUrls, tabId); 
+        
     }
 });
 
 
-function predictImages(imageUrls) {
+function predictImages(imageUrls, tabId) {
     const fakeImages = [];
 
     Promise.all(
@@ -325,8 +328,23 @@ function predictImages(imageUrls) {
             });
         })
     ).then(() => {
+        // clear previous fake images
+        chrome.storage.local.remove('fakeImages', () => {
+            console.log("假照片結果已清除");
+        });
+
         chrome.storage.local.set({ fakeImages }, () => {
             console.log("假照片結果已儲存至 local storage:", fakeImages);
+            
+            console.log("開始標記假圖片... send message to content.js");
+
+            chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['content.js']
+            }, () => {
+                chrome.tabs.sendMessage(tabId, { action: 'LabelFakeImages' , fakeImages });
+            });
+            
         });
     });
 }

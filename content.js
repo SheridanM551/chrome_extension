@@ -81,17 +81,62 @@
     });
 })();
 // Modified
-function getAllImages() {
+function getAllImages(tabId) {
     const images = document.querySelectorAll('img'); // Select all <img> elements
     const imageUrls = Array.from(images).map(img => img.src); // Extract the src attribute from each image
 
     console.log("Images found on the page:", imageUrls);
 
-    chrome.runtime.sendMessage({ action: 'InformationCaptured', imageUrls });
+    chrome.runtime.sendMessage({ action: 'InformationCaptured', imageUrls , tabId});
+}
+
+// Modified
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'LabelFakeImages') {
+        console.log("開始標記假圖片CSS...");
+        const fakeImages = message.fakeImages;
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            if (fakeImages.includes(img.src)) {
+                img.style.border = '5px solid red'; // Highlight fake images with a red border
+                console.log("假圖片CSS已標記:", img.src);
+            }
+        });
+    }
+});
+
+function createStyle() {
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = `
+    img.fake {
+        border: 5px solid red;
+        opacity: 0.5;
+        filter: blur(5px);
+        position: relative;
+    }
+
+    img.fake::after {
+        content: "假圖片";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        color: red;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px;
+        border-radius: 5px;
+        z-index: 10;
+    }
+    `;
+    document.head.appendChild(style);  // 添加到 <head> 中
+
 }
 // Modified
 chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === 'AutoDetect') {
-        getAllImages();
-    }
+    if (message.action === 'startAutoDetect') {
+        getAllImages(message.tabId);
+    } 
 });
+
